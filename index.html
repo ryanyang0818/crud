@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+<style>
+#test_div
+{
+	border: 1px solid red ;
+	width: 150px ;
+	height: 150px; 
+}
+</style>
+<script>
+;(function ( $, window, document, undefined ) {  //一些不錯的小技巧
+	//1. 傳入的參數
+alert(0) ;
+    var pluginName = "rFileUpload",
+        defaults = {} ;
+
+    // The actual plugin constructor
+    function Plugin( element, options ) {
+        this.element = element;
+		this.$element = $(element) ;
+        this.options = $.extend( {}, defaults, options) ;
+
+        this._defaults = defaults;
+        this._name = pluginName;
+
+        this.init();
+    }
+
+    Plugin.prototype = {
+
+        init: function() {
+			var _this = this ;
+			this.$element
+				.on('change', function(e)
+				{
+					files = e.target.files ;
+
+					var data = new FormData();
+					$.each(files, function(key, value)
+					{
+						data.append(key, value);
+					}) ;
+
+					var opt = 
+					{
+						url: _this.options.url,
+						type: 'POST',
+						data: data,
+						cache: false,
+						dataType: 'json',
+						processData: false, // Don't process the files
+						contentType: false, 
+					}
+
+					$.ajax(opt)
+						.done(function(resp)
+						{
+							_this.options.image.attr('src', "data:image/jpeg;base64,"+resp.dataUrl) ;
+						}) ;
+				}) ;
+        },
+
+    };
+
+	$.fn[pluginName] = function() {  
+		//處裡套件全域設定
+		args = Array.prototype.slice.call(arguments) ;  
+
+		return this.each(function() 
+		{
+			if (!$.data(this, 'plugin_' + pluginName)) {  
+				$.data(this, 'plugin_' + pluginName, new Plugin(this, args[0]));  //吃參數  
+			}
+		});  
+	}  
+
+})( jQuery, window, document );
+
+$(function()
+{
+
+
+	var opt =
+	{
+		  image: $('#img')
+		, url: 'file_upload.php'
+	} ;
+	$('.uploadInput').rFileUpload(opt) ;
+}) ;
+</script>
+<input class="uploadInput" type="file"> 
+<img style="border:1px solid red;width:100px;" id="img">
